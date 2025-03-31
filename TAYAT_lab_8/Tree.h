@@ -5,9 +5,11 @@
 enum type_data
 {
 	TYPE_UNKNOWN = 0,
-	TYPE_SHORT = 1,
-	TYPE_INTEGER = 2,
+	TYPE_INTEGER = 1,
+	TYPE_SHORT = 2,
 	TYPE_LONG = 3,
+	TYPE_CHAR = 4,
+	TYPE_FLOAT = 5,
 };
 
 enum type_object

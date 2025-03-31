@@ -210,6 +210,12 @@ type_data Tree::GetDataType(int type)
 		return TYPE_SHORT;
 	if (type == typeLong)
 		return TYPE_LONG;
+	if (type == typeConstInt)
+		return TYPE_INTEGER;
+	if (type == typeConstChar)
+		return TYPE_CHAR;
+	if (type == typeConstFloat)
+		return TYPE_FLOAT;
 	return TYPE_UNKNOWN;
 }
 

@@ -64,19 +64,15 @@ void Diagram::Data()
 	Node* newNode = new Node();
 	int type;
 	int type2;
-	Type();
+	int checkVarType = Type();
 
 	do {
 		type = LookForward(1);
 
-		/// <summary>
-		/// 
-		/// </summary>
+		
 		Tree* varNode = NULL;
-		type_data typeData = tree->GetDataType(type);
-		/// <summary>
-		/// 
-		/// </summary>
+		type_data typeData = tree->GetDataType(checkVarType);
+		
 
 		if (type != typeId)
 		{
@@ -84,9 +80,7 @@ void Diagram::Data()
 			scaner->PrintError("найдена ошибка в структуре Data, ожидался идентификатор переменной, ", lex);
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
+	
 		int pointer = scaner->GetUK();
 		type = Scan(lex);
 
@@ -96,7 +90,7 @@ void Diagram::Data()
 
 		newNode->id = lex;  // Устанавливаем идентификатор
 		newNode->objectType = OBJ_VAR;
-		newNode->dataType = tree->GetDataType(type);
+		newNode->dataType = tree->GetDataType(checkVarType);
 
 		type = LookForward(1);
 		if (type == typeEval) {
@@ -114,9 +108,6 @@ void Diagram::Data()
 		tree = tree->GetLeft();
 
 		scaner->PutUK(pointer);
-		/// <summary>
-		/// 
-		/// </summary>
 
 		type2 = LookForward(2);
 		if (type2 == typeEval)
@@ -162,14 +153,10 @@ void Diagram::Named_const()
 
 	do {
 		type = LookForward(1);
-		/// <summary>
-		/// 
-		/// </summary>
+		
 		Tree* varNode = NULL;
-		type_data typeData = tree->GetDataType(type);
-		/// <summary>
-		/// 
-		/// </summary>
+		type_data typeData = tree->GetDataType(checkConstType);
+		
 
 		int pointer = scaner->GetUK();
 		type = Scan(lex);
@@ -179,7 +166,7 @@ void Diagram::Named_const()
 		}
 
 		newNode->id = lex;  // Устанавливаем идентификатор
-		newNode->dataType = tree->GetDataType(type);
+		newNode->dataType = tree->GetDataType(checkConstType);
 		newNode->objectType = OBJ_NAMED;
 
 		type = LookForward(1);
@@ -298,7 +285,7 @@ void Diagram::OperatorsAndDescriptions()
 	else Operator();
 }
 
-void Diagram::Type()
+int Diagram::Type()
 {
 	type_lex lex;
 	int type;
@@ -312,37 +299,19 @@ void Diagram::Type()
 	}
 	type = Scan(lex);
 
+	if (type == typeInt)
+	{
+		return typeInt;
+	}
+
 	if (type == typeShort)
 	{
-		type2 = LookForward(1);
-		if (type2 == typeInt)
-		{
-			type = Scan(lex);
-			return;
-		}
-		return;
+		return typeShort;
 	}
 
 	if (type == typeLong)
 	{
-		type2 = LookForward(1);
-		if (type2 == typeLong)
-		{
-			type3 = LookForward(2);
-			if (type3 == typeInt)
-			{
-				type = Scan(lex);
-				type = Scan(lex);
-				return;
-			}
-			type = Scan(lex);
-			return;
-		}
-		if (type2 == typeInt)
-		{
-			type = Scan(lex);
-			return;
-		}
+		return typeLong;
 	}
 }
 
@@ -380,8 +349,6 @@ int Diagram::TypeConst()
 
 }
 
-
-
 void Diagram::Assignment()
 {
 	type_lex lex;
@@ -389,15 +356,11 @@ void Diagram::Assignment()
 
 	type = Scan(lex);
 
-	/// <summary>
-	/// 
-	/// </summary>
 	Tree* node = tree->FindUp(lex);
 
 	if (node == NULL) {
 		scaner->PrintError("Семантическая ошибка. ID не найден, ", lex);
 	}
-
 	if (node->GetSelfObjectType() == OBJ_NAMED_ASSIGNED)
 	{
 		scaner->PrintError("Семантическая ошибка. Попытка переприсваивания значения именованной константе, ", lex);
@@ -413,9 +376,7 @@ void Diagram::Assignment()
 
 	// Получаем тип переменной узла
 	type_data varType = node->GetSelfDataType();
-	/// <summary>
-	/// /
-	/// </summary>
+	
 
 	type = Scan(lex);
 	if (type != typeEval)

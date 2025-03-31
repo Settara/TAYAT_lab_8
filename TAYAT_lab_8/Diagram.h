@@ -13,7 +13,7 @@ private:
 	void Data();							// Данные
 	void Named_const();						// Именованная константа
 	void Function();						// Функция
-	void Type();							// Тип
+	int Type();							// Тип
 	void Assignment();						// Присваивание
 	void Expression();						// Выражение
 	void CompositeOperator();				// Составной оператор
