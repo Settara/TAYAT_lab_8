@@ -31,7 +31,7 @@ void Diagram::Program()
 
 	type = LookForward(1);
 
-	while (type == typeInt || type == typeShort || type == typeLong || type == typeConst)
+	while (type == typeInt || type == typeShort || type == typeLong || type == typeFloat || type == typeConst || type == typeVoid)
 	{
 		type = LookForward(1);
 		simbol = LookForward(3);
@@ -40,11 +40,11 @@ void Diagram::Program()
 		{
 			Named_const();
 		}
-		if ((type == typeInt || type == typeShort || type == typeLong) && simbol != typeLeftBracket && simbol2 != typeLeftBracket)
+		if ((type == typeInt || type == typeShort || type == typeLong || type == typeFloat) && simbol != typeLeftBracket && simbol2 != typeLeftBracket)
 		{
 			Data();
 		}
-		if ((type == typeInt || type == typeShort || type == typeLong) && (simbol == typeLeftBracket || simbol2 == typeLeftBracket))
+		if ((type == typeInt || type == typeShort || type == typeLong || type == typeFloat || type == typeConst || type == typeVoid) && (simbol == typeLeftBracket || simbol2 == typeLeftBracket))
 		{
 			Function();
 		}
@@ -95,11 +95,18 @@ void Diagram::Data()
 		type = LookForward(1);
 		if (type == typeEval) {
 			newNode->flagInit = 1;
+			type = Scan(lex); // Сканируем '='
+			int assignedType = LookForward(1);
+
+			if (checkVarType != assignedType) {
+				scaner->PrintError("Ошибка: тип значения не соответствует типу переменной ", lex);
+			}
 		}
 		else
 		{
 			newNode->flagInit = 0;
 		}
+
 
 		// Добавляем узел в левое поддерево
 		tree->SetLeft(newNode);
@@ -202,7 +209,14 @@ void Diagram::Function()
 	type_lex lex;
 	int type;
 
-	Type();
+	type = LookForward(1);
+	if (type != typeVoid)
+	{
+		type = Scan(lex);
+		scaner->PrintError("найдена ошибка в типе функции, ожидался тип данных (void), ", lex);
+	}
+	type = Scan(lex);
+
 
 	type = Scan(lex);
 	if (type != typeId && type != typeMain)
@@ -210,9 +224,8 @@ void Diagram::Function()
 		scaner->PrintError("найдена ошибка в структуре Function, ожидался идентификатор функции или ключевое слово 'main', ", lex);
 	}
 
-	/// <summary>
-	/// проверка на повторение
-	/// </summary>
+	
+	// проверка на повторение
 	if (tree->IsDoublicateId(tree, lex)) {
 		scaner->PrintError("Переопределение, ", lex);
 	}
@@ -230,13 +243,19 @@ void Diagram::Function()
 
 	Tree* tmpTree = tree; // Сохраняем текущий указатель дерева
 	tree = tree->GetRight(); // Переход к правому поддереву
-	//////
 
 
 	type = Scan(lex);
 	if (type != typeLeftBracket)
 	{
 		scaner->PrintError("найдена ошибка в структуре Function, ожидался символ '(', ", lex);
+	}
+
+	//Обрабатываем параметры функции, если они есть
+	type = LookForward(1);
+	if (type == typeInt || type == typeShort || type == typeLong || type == typeFloat)
+	{
+		ParameterList();
 	}
 
 	type = Scan(lex);
@@ -292,26 +311,31 @@ int Diagram::Type()
 	int type2;
 	int type3;
 	type = LookForward(1);
-	if (type != typeInt && type != typeShort && type != typeLong)
+	if (type != typeInt && type != typeShort && type != typeLong && type != typeFloat)
 	{
 		type = Scan(lex);
-		scaner->PrintError("найдена ошибка в структуре Type, ожидался тип данных (int, short, long), ", lex);
+		scaner->PrintError("найдена ошибка в структуре Type, ожидался тип данных (int, short, long, float), ", lex);
 	}
 	type = Scan(lex);
 
 	if (type == typeInt)
 	{
-		return typeInt;
+		return typeConstInt;
 	}
 
 	if (type == typeShort)
 	{
-		return typeShort;
+		return typeConstInt;
 	}
 
 	if (type == typeLong)
 	{
-		return typeLong;
+		return typeConstInt;
+	}
+
+	if (type == typeFloat)
+	{
+		return typeConstFloat;
 	}
 }
 
@@ -461,9 +485,9 @@ void Diagram::Operator()
 		return;
 	}
 
-	if (type == typeFor)
+	if (type == typeSwitch)
 	{
-		For_operator();
+		Switch_operator();
 		return;
 	}
 
@@ -514,7 +538,7 @@ void Diagram::For_operator()
 
 	tmpTree = tree; // Сохраняем текущий указатель дерева
 	tree = tree->GetRight(); // Переход к правому поддереву
-	///////////////////////////////////////////////
+	
 
 	if (type != typeFor)
 	{
@@ -585,7 +609,7 @@ void Diagram::For_operator()
 void Diagram::FunctionCall()
 {
 	type_lex lex;
-	int type;
+	int type, next, exit;
 
 	type = Scan(lex);
 	if (type != typeId)
@@ -593,9 +617,8 @@ void Diagram::FunctionCall()
 		scaner->PrintError("найдена ошибка в структуре FunctionCall, ожидался идентификатор функции, ", lex);
 	}
 
-	/// <summary>
-	/// проверка на повторение
-	/// </summary>
+	
+	// проверка на повторение
 	// Ищем узел, называющийся объектом
 	Tree* objectNode = tree->FindUp(lex);
 	// Получаем указатель на функцию из функции с тем же именем в родительском узле
@@ -615,6 +638,39 @@ void Diagram::FunctionCall()
 	if (type != typeLeftBracket)
 	{
 		scaner->PrintError("найдена ошибка в структуре FunctionCall, ожидался символ '(', ", lex);
+	}
+
+	//Обрабатываем параметры функции, если они есть
+	type = LookForward(1);
+	next = -1;
+	exit = -1;
+	if (type == typeId || type == typeConstInt || type == typeConstFloat)
+	{
+		//Обрабатываем список параметров
+		do {
+			//Обрабатываем значение параметра (идентификатор или константа)
+			if (type == typeId || type == typeConstInt || type == typeConstFloat)
+			{
+				type = Scan(lex);
+			}
+			else
+			{
+				scaner->PrintError("найдена ошибка в структуре FunctionCall, ожидался идентификатор или константа, ", lex);
+			}
+
+			//Проверяем, есть ли следующий параметр
+			type = LookForward(1);
+			exit = LookForward(2);
+			if (type == typeComma && (exit == typeId || exit == typeConstInt || exit == typeConstFloat))
+			{
+				next = Scan(lex);
+				type = LookForward(1);
+			}
+			if (type == typeRightBracket)
+			{
+				next = -1;
+			}
+		} while (next == typeComma);
 	}
 
 	type = Scan(lex);
@@ -655,13 +711,7 @@ void Diagram::Comparison()
 	{
 		type = Scan(lex);
 
-		/// <summary>
-		/// 
-		/// </summary>
 		Tree* node = tree->FindUp(lex);
-		/// <summary>
-		///
-		/// </summary>
 
 		Summand();
 		type = LookForward(1);
@@ -766,4 +816,108 @@ void Diagram::ElementaryExpression()
 	}
 	type = Scan(lex);
 	scaner->PrintError("найдена ошибка в структуре ElementaryExpression, ожидалось выражение, ", lex);
+}
+
+void Diagram::ParameterList()
+{
+	type_lex lex;
+	int type;
+
+	do {
+		//Обрабатываем тип параметра
+		type = LookForward(1);
+		if (type != typeInt && type != typeShort && type != typeLong && type != typeFloat)
+		{
+			scaner->PrintError("найдена ошибка в структуре ParameterList, ожидался тип параметра (int, short, long, float), ", lex);
+		}
+		type = Scan(lex); // Пропускаем тип
+
+		//Обрабатываем идентификатор параметра
+		type = Scan(lex);
+		if (type != typeId)
+		{
+			scaner->PrintError("найдена ошибка в структуре ParameterList, ожидался идентификатор параметра, ", lex);
+		}
+
+		//Проверяем, есть ли следующий параметр
+		type = LookForward(1);
+		if (type == typeComma)
+		{
+			type = Scan(lex); //Пропускаем запятую
+		}
+	} while (type == typeComma);
+}
+
+void Diagram::Switch_operator()
+{
+	type_lex lex;
+	int type;
+
+	type = Scan(lex);
+	if (type != typeSwitch)
+	{
+		scaner->PrintError("Ошибка: ожидалось ключевое слово 'switch'", lex);
+	}
+
+	type = Scan(lex);
+	if (type != typeLeftBracket)
+	{
+		scaner->PrintError("Ошибка: ожидался символ '('", lex);
+	}
+
+	Expression();
+
+	type = Scan(lex);
+	if (type != typeRightBracket)
+	{
+		scaner->PrintError("Ошибка: ожидался символ ')'", lex);
+	}
+
+	type = Scan(lex);
+	if (type != typeLeftBrace)
+	{
+		scaner->PrintError("Ошибка: ожидался символ '{'", lex);
+	}
+
+	type = LookForward(1);
+	while (type == typeCase || type == typeDefault)
+	{
+		CaseOperator();
+		type = LookForward(1);
+	}
+
+	type = Scan(lex);
+	if (type != typeRightBrace)
+	{
+		scaner->PrintError("Ошибка: ожидался символ '}'", lex);
+	}
+}
+
+void Diagram::CaseOperator()
+{
+	type_lex lex;
+	int type = Scan(lex);
+	int next;
+
+	if (type != typeCase && type != typeDefault)
+	{
+		scaner->PrintError("Ошибка: ожидалось ключевое слово 'case' или 'default'", lex);
+	}
+
+	if (type == typeCase)
+	{
+		Expression();
+	}
+
+	type = Scan(lex);
+	if (type != typeColon)
+	{
+		scaner->PrintError("Ошибка: ожидался символ ':'", lex);
+	}
+
+	next = LookForward(1);
+	if (next != typeCase && next != typeDefault)
+	{
+		OperatorsAndDescriptions();
+	}
 }

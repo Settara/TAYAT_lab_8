@@ -13,7 +13,7 @@ private:
 	void Data();							// Данные
 	void Named_const();						// Именованная константа
 	void Function();						// Функция
-	int Type();							// Тип
+	int Type();								// Тип
 	void Assignment();						// Присваивание
 	void Expression();						// Выражение
 	void CompositeOperator();				// Составной оператор
@@ -29,6 +29,9 @@ private:
 	int TypeConst();						// Тип константы
 	int LookForward(int pointer);
 	int Scan(type_lex lex);
+	void ParameterList();					//Список параметров
+	void Switch_operator();					//Оператор Switch
+	void CaseOperator();					//
 
 public:
 	Diagram(Scaner* scaner, Tree* tree);

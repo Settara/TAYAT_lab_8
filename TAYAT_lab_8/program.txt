@@ -1,8 +1,9 @@
-
-int main()
+void func1()
 {
-	int d = 3;
-	int f = 2;
-	f = 1;
-		
+
+}
+
+void main(int a, float b)
+{
+
 }

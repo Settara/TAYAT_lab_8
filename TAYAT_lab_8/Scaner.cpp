@@ -4,13 +4,13 @@
 //Список допустимых ключевых слов в программе
 type_lex keyword[maxKeyword] =
 {
-    "int", "short", "long", "float", "void", "main", "const", "switch", "case", "default", "char"
+    "int", "short", "long", "float", "char", "void", "main", "const", "switch", "case", "default"
 };
 
 //Cписок идентификаторов, которые соответствуют допустимым ключевым словам в программе
 int indexKeyword[maxKeyword] =
 {
-    typeInt, typeShort, typeLong, typeFloat, typeVoid, typeMain, typeConst, typeSwitch, typeCase, typeDefault, typeChar
+    typeInt, typeShort, typeLong, typeFloat, typeChar, typeVoid, typeMain, typeConst, typeSwitch, typeCase, typeDefault
 };
 
 //Ошибка если файл пустой
