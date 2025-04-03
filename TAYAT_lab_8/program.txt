@@ -1,9 +1,9 @@
-void func1()
+void func(float a, long b)
 {
-
 }
 
-void main(int a, float b)
+void main()
 {
-
+	float a = 1.2;
+	;
 }

@@ -56,6 +56,7 @@ void Diagram::Program()
 		type = Scan(lex);
 		scaner->PrintError("найдена ошибка в структуре Program, ожидался конец программы, ", lex);
 	}
+
 }
 
 void Diagram::Data()
@@ -127,12 +128,14 @@ void Diagram::Data()
 			type = Scan(lex);
 			type = Scan(lex);
 		}
+
 	} while (type == typeComma);
 
 	if (type != typeSemicolon)
 	{
 		scaner->PrintError("найдена ошибка в структуре Data, ожидался символ ';', ", lex);
 	}
+	
 }
 
 void Diagram::Named_const()
@@ -297,7 +300,7 @@ void Diagram::OperatorsAndDescriptions()
 	{
 		Named_const();
 	}
-	else if (type == typeInt || type == typeShort || type == typeLong)
+	else if (type == typeInt || type == typeShort || type == typeLong || type == typeFloat)
 	{
 		Data();
 	}
@@ -608,6 +611,7 @@ void Diagram::For_operator()
 
 void Diagram::FunctionCall()
 {
+	Tree* proverka;
 	type_lex lex;
 	int type, next, exit;
 
@@ -616,7 +620,6 @@ void Diagram::FunctionCall()
 	{
 		scaner->PrintError("найдена ошибка в структуре FunctionCall, ожидался идентификатор функции, ", lex);
 	}
-
 	
 	// проверка на повторение
 	// Ищем узел, называющийся объектом
@@ -649,13 +652,33 @@ void Diagram::FunctionCall()
 		//Обрабатываем список параметров
 		do {
 			//Обрабатываем значение параметра (идентификатор или константа)
-			if (type == typeId || type == typeConstInt || type == typeConstFloat)
+			if (type == typeConstInt || type == typeConstFloat)
 			{
 				type = Scan(lex);
 			}
 			else
 			{
-				scaner->PrintError("найдена ошибка в структуре FunctionCall, ожидался идентификатор или константа, ", lex);
+				if (type == typeId)
+				{
+					type = Scan(lex);
+					proverka = tree->FindUp(lex);
+					
+					if (proverka == nullptr)
+					{
+						scaner->PrintError("Семантическая ошибка. Переменная не найдена, ", lex);
+					}
+					else
+					{
+						if (!proverka->IsSelfInit())
+						{
+							scaner->PrintError("Семантическая ошибка. Переменная не инициализирована, ", lex);
+						}
+					}
+				}
+				else
+				{
+					scaner->PrintError("найдена ошибка в структуре FunctionCall, ожидался идентификатор или константа, ", lex);
+				}
 			}
 
 			//Проверяем, есть ли следующий параметр
@@ -821,31 +844,55 @@ void Diagram::ElementaryExpression()
 void Diagram::ParameterList()
 {
 	type_lex lex;
+	Node* newNode = new Node();
 	int type;
+	int type2;
+	int checkVarType;
 
 	do {
-		//Обрабатываем тип параметра
+		checkVarType = Type();
 		type = LookForward(1);
-		if (type != typeInt && type != typeShort && type != typeLong && type != typeFloat)
-		{
-			scaner->PrintError("найдена ошибка в структуре ParameterList, ожидался тип параметра (int, short, long, float), ", lex);
-		}
-		type = Scan(lex); // Пропускаем тип
 
-		//Обрабатываем идентификатор параметра
-		type = Scan(lex);
+
+		Tree* varNode = NULL;
+		type_data typeData = tree->GetDataType(checkVarType);
+
+
 		if (type != typeId)
 		{
-			scaner->PrintError("найдена ошибка в структуре ParameterList, ожидался идентификатор параметра, ", lex);
+			type = Scan(lex);
+			scaner->PrintError("найдена ошибка в структуре Data, ожидался идентификатор переменной, ", lex);
 		}
+
+
+		int pointer = scaner->GetUK();
+		type = Scan(lex);
+
+		if (tree->IsDoublicateId(tree, lex)) {
+			tree->PrintError("Переопределение ", lex);
+		}
+
+		newNode->id = lex;  // Устанавливаем идентификатор
+		newNode->objectType = OBJ_PARAM;
+		newNode->dataType = tree->GetDataType(checkVarType);
+
+		// Добавляем узел в левое поддерево
+		tree->SetLeft(newNode);
+
+		// Переход к левому дочернему узлу для дальнейших операций
+		tree = tree->GetLeft();
 
 		//Проверяем, есть ли следующий параметр
 		type = LookForward(1);
 		if (type == typeComma)
 		{
 			type = Scan(lex); //Пропускаем запятую
+			
 		}
+
 	} while (type == typeComma);
+
+
 }
 
 void Diagram::Switch_operator()
@@ -853,7 +900,25 @@ void Diagram::Switch_operator()
 	type_lex lex;
 	int type;
 
+	Node* newNode = new Node();
+	Tree* tmpTree = tree;
+
 	type = Scan(lex);
+
+	// Создаём новый узел для функции
+	newNode->id = lex;  // Назначаем идентификатор
+	newNode->objectType = OBJ_FUNC;
+	newNode->dataType = tree->GetDataType(type);
+
+	// Вставляем узел в дерево
+	tree->SetLeft(newNode);
+	tree = tree->GetLeft(); // Переход к новому узлу
+	tree->SetRight(NULL);
+
+	tmpTree = tree; // Сохраняем текущий указатель дерева
+	tree = tree->GetRight(); // Переход к правому поддереву
+
+
 	if (type != typeSwitch)
 	{
 		scaner->PrintError("Ошибка: ожидалось ключевое слово 'switch'", lex);
@@ -891,6 +956,10 @@ void Diagram::Switch_operator()
 	{
 		scaner->PrintError("Ошибка: ожидался символ '}'", lex);
 	}
+
+	// Возвращаемся к предыдущему узлу
+	tree = tmpTree;
+
 }
 
 void Diagram::CaseOperator()

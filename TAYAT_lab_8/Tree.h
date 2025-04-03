@@ -21,6 +21,7 @@ enum type_object
 	OBJ_COMPO = 5,
 	OBJ_NAMED = 6,
 	OBJ_NAMED_ASSIGNED = 7,
+	OBJ_PARAM = 8,
 };
 
 class Tree;
