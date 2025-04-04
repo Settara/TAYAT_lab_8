@@ -25,13 +25,12 @@ private:
 	void Multiplier();						// ћножитель
 	void UnaryOperation();					// ”нарна€ операци€
 	void ElementaryExpression();			// Ёлементарное выражение
-	void For_operator();					// ÷икл
 	int TypeConst();						// “ип константы
 	int LookForward(int pointer);
 	int Scan(type_lex lex);
 	void ParameterList();					//—писок параметров
 	void Switch_operator();					//ќператор Switch
-	void CaseOperator();					//
+	void CaseOperator();					
 
 public:
 	Diagram(Scaner* scaner, Tree* tree);

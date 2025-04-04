@@ -219,18 +219,6 @@ type_data Tree::GetDataType(int type)
 	return TYPE_UNKNOWN;
 }
 
-//type_data Tree::GetTypeResult(type_data type1, type_data type2, int operation)
-//{
-//	if (operation >= typeUnEq && operation <= typeMore)
-//		return TYPE_SHORT;
-//	if (operation == typeMod)
-//		return TYPE_UNKNOWN;
-//	if (type1 >= type2)
-//		return type1;
-//
-//	return type2;
-//}
-
 void Tree::Print()
 {
 	if (node != NULL)
@@ -254,7 +242,6 @@ void Tree::Print()
 
 void Tree::Print(int level)
 {
-	// std::string indent(level * 2, ' ');
 	std::string indent = "";
 	std::cout << std::endl;
 	if (node != NULL)
@@ -270,26 +257,18 @@ void Tree::Print(int level)
 	}
 	if (right != NULL)
 	{
-
 		std::cout << indent << " Право -> " << right->node->id;
-
-		// right->Print(level + 1); // Рекурсивный вывод для правого дочернего узла
 	}
 	if (left != NULL)
 	{
 		std::cout << indent << " Лево ->" << left->node->id;
-		// left->Print(level + 1); // Рекурсивный вывод для левого дочернего узла
 	}
 	if (right != NULL)
 	{
-
-		// std::cout << indent << " Право -> ";
-
 		right->Print(level + 1); // Рекурсивный вывод для правого дочернего узла
 	}
 	if (left != NULL)
 	{
-		// std::cout << indent << " Лево ->";
 		left->Print(level + 1); // Рекурсивный вывод для левого дочернего узла
 	}
 }

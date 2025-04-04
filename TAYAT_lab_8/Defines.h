@@ -18,15 +18,13 @@ typedef char type_lex[maxLex];  // Лексема
 #define typeLong 3
 #define typeFloat 4
 #define typeChar 5
-#define typeFor 6
-#define typeReturn 7
-#define typeMain 8
-#define typeConst 9
-#define typeVoid 10
+#define typeMain 6
+#define typeConst 7
+#define typeVoid 8
 
-#define typeSwitch 11
-#define typeCase 12
-#define typeDefault 13
+#define typeSwitch 10
+#define typeCase 11
+#define typeDefault 12
 
 
 //Тип лексем

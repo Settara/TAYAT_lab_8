@@ -20,7 +20,7 @@ int main()
     type = scaner->UseScaner(lex);
 
     if (type == typeEnd)
-        std::cout << "Синиаксмчекских ошибок не обнаружено\n";
+        std::cout << "Ошибок не обнаружено\n";
 
     tree->Print(0);
     std::cout << "\n\n\n";

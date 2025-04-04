@@ -98,10 +98,18 @@ void Diagram::Data()
 			newNode->flagInit = 1;
 			type = Scan(lex); // Сканируем '='
 			int assignedType = LookForward(1);
-
-			if (checkVarType != assignedType) {
-				scaner->PrintError("Ошибка: тип значения не соответствует типу переменной ", lex);
+			
+			if (assignedType != typeId)
+			{
+				if (checkVarType != assignedType) {
+					scaner->PrintError("Ошибка: тип значения не соответствует типу переменной ", lex);
+				}
 			}
+			else
+			{
+
+			}
+			
 		}
 		else
 		{
@@ -438,7 +446,6 @@ void Diagram::CompositeOperator()
 
 	Tree* tmpTree = tree; // Сохраняем текущий указатель дерева
 	tree = tree->GetRight(); // Переход к правому поддереву
-	//////
 
 	type = LookForward(1);
 
@@ -461,20 +468,6 @@ void Diagram::Operator()
 {
 	type_lex lex;
 	int type = LookForward(1);
-
-	if (type == typeReturn)
-	{
-		type = Scan(lex);
-
-		Expression();
-
-		type = Scan(lex);
-		if (type != typeSemicolon)
-		{
-			scaner->PrintError("найдена ошибка в структуре Operator, ожидался символ ';' после return <выражение>, ", lex);
-		}
-		return;
-	}
 
 	if (type == typeSemicolon) // пустой оператор
 	{
@@ -519,96 +512,6 @@ void Diagram::Operator()
 	scaner->PrintError("найдена ошибка в структуре Operator, ожидался оператор, ", lex);
 }
 
-void Diagram::For_operator()
-{
-	type_lex lex;
-	int type;
-
-	Node* newNode = new Node();
-	Tree* tmpTree = tree;
-
-	type = Scan(lex);
-
-	// Создаём новый узел для функции
-	newNode->id = lex;  // Назначаем идентификатор
-	newNode->objectType = OBJ_FUNC;
-	newNode->dataType = tree->GetDataType(type);
-
-	// Вставляем узел в дерево
-	tree->SetLeft(newNode);
-	tree = tree->GetLeft(); // Переход к новому узлу
-	tree->SetRight(NULL);
-
-	tmpTree = tree; // Сохраняем текущий указатель дерева
-	tree = tree->GetRight(); // Переход к правому поддереву
-	
-
-	if (type != typeFor)
-	{
-		scaner->PrintError("найдена ошибка в структуре For_operator, ожидалось ключевое слово 'for', ", lex);
-	}
-
-	type = Scan(lex);
-	if (type != typeLeftBracket)
-	{
-		scaner->PrintError("найдена ошибка в структуре For_operator, ожидался символ '(', ", lex);
-	}
-
-	type = LookForward(1);
-
-
-	if (type == typeInt || type == typeShort || type == typeLong)
-	{
-		Data();
-	}
-	else if (type != typeSemicolon)
-	{
-		Assignment();
-		type = Scan(lex);
-		if (type != typeSemicolon)
-		{
-			scaner->PrintError("найдена ошибка в структуре For_operator, ожидался символ ';', ", lex);
-		}
-	}
-	else
-	{
-		type = Scan(lex);
-		if (type != typeSemicolon)
-		{
-			scaner->PrintError("найдена ошибка в структуре For_operator, ожидался символ ';', ", lex);
-		}
-	}
-
-	type = LookForward(1);
-	if (type != typeSemicolon)
-	{
-		Expression();
-	}
-	type = Scan(lex);
-	if (type != typeSemicolon)
-	{
-		scaner->PrintError("найдена ошибка в структуре For_operator, ожидался символ ';', ", lex);
-	}
-
-	type = LookForward(1);
-	if (type != typeRightBracket)
-	{
-		Assignment();
-	}
-
-	type = Scan(lex);
-	if (type != typeRightBracket)
-	{
-		scaner->PrintError("найдена ошибка в структуре For_operator, ожидался символ ')', ", lex);
-	}
-
-	OperatorsAndDescriptions();
-
-	// Возвращаемся к предыдущему узлу
-	tree = tmpTree;
-
-}
-
 void Diagram::FunctionCall()
 {
 	Tree* proverka;
@@ -635,7 +538,6 @@ void Diagram::FunctionCall()
 	if (methodNode->GetSelfObjectType() != OBJ_FUNC) {
 		scaner->PrintError("Не является функцией, ", lex);
 	}
-	/////////
 
 	type = Scan(lex);
 	if (type != typeLeftBracket)
@@ -723,7 +625,6 @@ void Diagram::Expression()
 		scaner->PrintError("найдена ошибка в структуре Expression, ожидался логический оператор, ';' или ',', ", lex);
 	}*/
 }
-//&& type != typeRightBracket
 
 void Diagram::Comparison()
 {
